@@ -5,11 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/usr/src/app
-      - exclude:/usr/src/app/node_modules
     env_file: .env
     ports:
       - "80:$PORT"
-volumes:
-  exclude:

@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 8080;
 
 app.post('/caption', async (req, res) => {
     try {
-        const {headers, body} = req;
+        const {headers, body, query} = req;
 
         console.log(`headers`, headers);
         console.log(`body`, body);
@@ -41,7 +41,7 @@ app.post('/caption', async (req, res) => {
                 process.env.TWILIO_AUTH_TOKEN,
                 twilioSignature,
                 url,
-                body
+                query.bodySHA256
             );
             console.log(`requestIsValid: ${requestIsValid}`);
 

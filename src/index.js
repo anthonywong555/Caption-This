@@ -36,6 +36,7 @@ app.post('/caption', async (req, res) => {
             const twilioSignature = headers['x-twilio-signature'];
             const url = `${process.env.PRODUCTION_BASE_URL}/caption`;
             console.log(`url: ${url}`);
+            console.log(`twilioSignature: ${twilioSignature}`);
             const requestIsValid = twilio.validateRequest(
                 process.env.TWILIO_AUTH_TOKEN,
                 twilioSignature,

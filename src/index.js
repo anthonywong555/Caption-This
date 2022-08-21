@@ -28,23 +28,17 @@ const PORT = process.env.PORT || 8080;
 
 app.post('/caption', async (req, res) => {
     try {
-        const {headers, body, params} = req;
-
-        console.log(`headers`, headers);
-        console.log(`body`, body);
-        console.log(`params`, params);
+        const {headers, body} = req;
+        
         if (process.env.NODE_ENV === 'production') {
             const twilioSignature = headers['x-twilio-signature'];
             const url = `${process.env.PRODUCTION_BASE_URL}/caption`;
-            console.log(`url: ${url}`);
-            console.log(`twilioSignature: ${twilioSignature}`);
             const requestIsValid = twilio.validateRequest(
                 process.env.TWILIO_AUTH_TOKEN,
                 twilioSignature,
                 url,
                 body
             );
-            console.log(`requestIsValid: ${requestIsValid}`);
 
             if(!requestIsValid) {
                 return res.status(403).send('Forbidden');
@@ -52,7 +46,7 @@ app.post('/caption', async (req, res) => {
         }
 
         res.send('<Response></Response>');
-        //await driver(body);
+        await driver(body);
     } catch (e) {
         console.error(`An error has occurred: \n${e}`);
         return res.status(500).send('Internal Server Error');

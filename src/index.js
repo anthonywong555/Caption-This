@@ -23,15 +23,16 @@ const bbClient = new Bannerbear(process.env.BANNER_BEAR_API_KEY);
  * Express
  */
 const app = express();
-app.use(bodyParser.json({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 const PORT = process.env.PORT || 8080;
 
 app.post('/caption', async (req, res) => {
     try {
-        const {headers, body, query} = req;
+        const {headers, body, params} = req;
 
         console.log(`headers`, headers);
         console.log(`body`, body);
+        console.log(`params`, params);
         if (process.env.NODE_ENV === 'production') {
             const twilioSignature = headers['x-twilio-signature'];
             const url = `${process.env.PRODUCTION_BASE_URL}/caption`;
@@ -41,7 +42,7 @@ app.post('/caption', async (req, res) => {
                 process.env.TWILIO_AUTH_TOKEN,
                 twilioSignature,
                 url,
-                body
+                params
             );
             console.log(`requestIsValid: ${requestIsValid}`);
 
@@ -51,7 +52,7 @@ app.post('/caption', async (req, res) => {
         }
 
         res.send('<Response></Response>');
-        await driver(body);
+        //await driver(body);
     } catch (e) {
         console.error(`An error has occurred: \n${e}`);
         return res.status(500).send('Internal Server Error');

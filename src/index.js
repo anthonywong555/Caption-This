@@ -4,11 +4,11 @@
  * Imports
  */
 import 'dotenv/config';
-import twilio from 'twilio';
 import express from 'express';
 import bodyParser from 'body-parser';
-import probe from 'probe-image-size';
+import twilio from 'twilio';
 import { Bannerbear } from 'bannerbear';
+import probe from 'probe-image-size';
 
 /**
  * Clients

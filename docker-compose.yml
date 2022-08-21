@@ -1,0 +1,13 @@
+version: '3'
+services:
+  web:
+    container_name: caption-this
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file: .env
+    ports:
+      - "80:$PORT"

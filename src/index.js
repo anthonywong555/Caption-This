@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 8080;
 app.post('/caption', async (req, res) => {
     try {
         const {headers, body} = req;
-
+        console.log(`body`, body);
         if (process.env.NODE_ENV === 'production') {
             const twilioSignature = headers['x-twilio-signature'];
             const url = `${process.env.PRODUCTION_BASE_URL}/caption`;

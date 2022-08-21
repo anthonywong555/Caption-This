@@ -65,7 +65,7 @@ const driver = async ({To, From, Body, ImageURL}) => {
                 modifications: [
                     {
                         name: "image",
-                        image_url: anImageURL
+                        image_url: ImageURL
                     },
                     {
                         "name": "title",

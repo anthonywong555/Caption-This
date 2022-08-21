@@ -89,6 +89,7 @@ const driver = async ({To, From, Body, ImageURL}) => {
 
         console.log(`sid: ${sid}`);
 
+        
         return sid;
     } catch(e) {
         console.error(`An error has occurred in the driver method. \n${e}`);

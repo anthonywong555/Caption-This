@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 8080;
 app.post('/caption', async (req, res) => {
     try {
         const {headers, body} = req;
-        
+
         if (process.env.NODE_ENV === 'production') {
             const twilioSignature = headers['x-twilio-signature'];
             const url = `${process.env.PRODUCTION_BASE_URL}/caption`;
@@ -53,51 +53,43 @@ app.post('/caption', async (req, res) => {
     }
 });
 
-const driver = async ({To, From, Body, ImageURLs}) => {
+const driver = async ({To, From, Body, ImageURL}) => {
     try {
         console.log(`Body: ${Body}`);
-        console.log(`ImageURLs: ${ImageURLs}`);
+        console.log(`ImageURLs: ${ImageURL}`);
 
-        const bbPromises = ImageURLs.map(async(anImageURL) => {
-            const probeImageResult = await probe(anImageURL);
-            const bbTemplateId = getAppropriateTemplateId(probeImageResult);
-            const bbImage = await bbClient.create_image(
-                bbTemplateId, {
-                    modifications: [
-                        {
-                            name: "image",
-                            image_url: anImageURL
-                        },
-                        {
-                            "name": "title",
-                            "text": Body
-                        }
-                    ]
-                }, true
-            );
-            return bbImage;
+        const probeImageResult = await probe(ImageURL);
+        const bbTemplateId = getAppropriateTemplateId(probeImageResult);
+        const bbImage = await bbClient.create_image(
+            bbTemplateId, {
+                modifications: [
+                    {
+                        name: "image",
+                        image_url: anImageURL
+                    },
+                    {
+                        "name": "title",
+                        "text": Body
+                    }
+                ]
+            }, true
+        );
+
+        const {image_url_png, uid} = bbImage;
+
+        console.log(`bbImageUID: ${uid}`);
+
+        const twilioSMSResponse = await twilioClient.messages.create({
+            to: From,
+            from: To,
+            mediaUrl: image_url_png,
         });
 
-        const bbResults = await Promise.all(bbPromises);
-        const bbPNGImageUrls = bbResults.map((bbResult) => bbResult.image_url_png);
-        const bbImageUIDs = bbResults.map((bbImage) => bbImage.uid);
+        const {sid} = twilioSMSResponse;
 
-        console.log(`bbImageUIDs: ${bbImageUIDs}`);
+        console.log(`sid: ${sid}`);
 
-        const twilioSMSPromises = bbPNGImageUrls.map(async(mediaUrl) => {
-            const sms = await twilioClient.messages.create({
-                mediaUrl,
-                to: From,
-                from: To,
-            });
-            return sms;
-        });
-
-        const twilioSMSResponses  = await Promise.all(twilioSMSPromises);
-        const twilioSMSSIDs = twilioSMSResponses.map((aSMSResponse) => aSMSResponse.sid);
-        console.log(`twilioSMSSIDs: ${twilioSMSSIDs}`);
-
-        return twilioSMSSIDs;
+        return sid;
     } catch(e) {
         console.error(`An error has occurred in the driver method. \n${e}`);
         await twilioClient.messages.create({

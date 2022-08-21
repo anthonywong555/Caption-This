@@ -73,7 +73,7 @@ const driver = async ({To, From, Body, ImageURL}) => {
         );
         
         const {image_url_png, uid} = bbImage;
-        
+
         console.log(`uid: ${uid}`);
 
         const twilioSMSResponse = await twilioClient.messages.create({

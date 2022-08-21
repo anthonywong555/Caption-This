@@ -1,0 +1,307 @@
+{
+    "description": "Caption This Flow - Production",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "next": "set_variables_5",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "incomingCall"
+          },
+          {
+            "event": "incomingConversationMessage"
+          },
+          {
+            "event": "incomingRequest"
+          },
+          {
+            "event": "incomingParent"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      },
+      {
+        "name": "http_1",
+        "type": "make-http-request",
+        "transitions": [
+          {
+            "event": "success"
+          },
+          {
+            "next": "send_message_2",
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 1060,
+            "y": 1710
+          },
+          "method": "POST",
+          "content_type": "application/x-www-form-urlencoded;charset=utf-8",
+          "body": "",
+          "parameters": [
+            {
+              "value": "{{trigger.message.To}}",
+              "key": "To"
+            },
+            {
+              "value": "{{trigger.message.From}}",
+              "key": "From"
+            },
+            {
+              "value": "{{flow.variables.Body}}",
+              "key": "Body"
+            },
+            {
+              "value": "{{flow.variables.ImageURL}}",
+              "key": "ImageURL"
+            }
+          ],
+          "url": "{{flow.variables.BASE_URL}}/caption"
+        }
+      },
+      {
+        "name": "send_and_reply_1",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_2",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -490,
+            "y": 560
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "What do you want to caption to say?",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "send_and_reply_2",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_1",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 550,
+            "y": 610
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "What image do you want to use?",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "set_variables_1",
+        "type": "set-variables",
+        "transitions": [
+          {
+            "next": "send_message_1",
+            "event": "next"
+          }
+        ],
+        "properties": {
+          "variables": [
+            {
+              "value": "{{widgets.send_and_reply_1.inbound.Body}}",
+              "key": "Body"
+            }
+          ],
+          "offset": {
+            "x": -280,
+            "y": 1180
+          }
+        }
+      },
+      {
+        "name": "split_1",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "send_and_reply_2",
+            "event": "noMatch"
+          },
+          {
+            "next": "set_variables_3",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "true",
+                "arguments": [
+                  "{{widgets.send_and_reply_2.inbound.MediaUrl0}}"
+                ],
+                "type": "is_not_blank",
+                "value": "Is Not Blank"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.send_and_reply_2.inbound.MediaUrl0}}",
+          "offset": {
+            "x": 380,
+            "y": 880
+          }
+        }
+      },
+      {
+        "name": "set_variables_3",
+        "type": "set-variables",
+        "transitions": [
+          {
+            "next": "send_and_reply_1",
+            "event": "next"
+          }
+        ],
+        "properties": {
+          "variables": [
+            {
+              "value": "{{widgets.send_and_reply_2.inbound.MediaUrl0}}",
+              "key": "ImageURL"
+            }
+          ],
+          "offset": {
+            "x": 810,
+            "y": 1120
+          }
+        }
+      },
+      {
+        "name": "split_2",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "send_and_reply_1",
+            "event": "noMatch"
+          },
+          {
+            "next": "set_variables_1",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "true",
+                "arguments": [
+                  "{{widgets.send_and_reply_1.inbound.Body}}"
+                ],
+                "type": "is_not_blank",
+                "value": "Is Not Blank"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.send_and_reply_1.inbound.Body}}",
+          "offset": {
+            "x": -470,
+            "y": 800
+          }
+        }
+      },
+      {
+        "name": "send_message_1",
+        "type": "send-message",
+        "transitions": [
+          {
+            "next": "http_1",
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 1030,
+            "y": 1380
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Processing..."
+        }
+      },
+      {
+        "name": "set_variables_5",
+        "type": "set-variables",
+        "transitions": [
+          {
+            "next": "send_and_reply_2",
+            "event": "next"
+          }
+        ],
+        "properties": {
+          "variables": [
+            {
+              "value": "BASE URL",
+              "key": "BASE_URL"
+            }
+          ],
+          "offset": {
+            "x": 600,
+            "y": 230
+          }
+        }
+      },
+      {
+        "name": "send_message_2",
+        "type": "send-message",
+        "transitions": [
+          {
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 1050,
+            "y": 1970
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Sorry, it looks like an error has occurred. Please try again later."
+        }
+      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
+    }
+  }

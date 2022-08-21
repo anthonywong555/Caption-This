@@ -9,21 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build, Push and Deploy to Heroku
+        id: heroku
+        uses: snithyanantham/docker-compose-multiple-apps-heroku-deploy@v1.0 # This is the action
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-        env:
-          HD_PORT: ${{secrets.PORT}}
-          HD_PRODUCTION_BASE_URL: ${{secrets.PRODUCTION_BASE_URL}}
-          HD_BANNER_BEAR_API_KEY: ${{secrets.BANNER_BEAR_API_KEY}}
-          HD_BANNER_BEAR_SQUARE_TEMPLATE_ID: ${{secrets.BANNER_BEAR_SQUARE_TEMPLATE_ID}}
-          HD_BANNER_BEAR_LANDSCAPE_TEMPLATE_ID: ${{secrets.BANNER_BEAR_LANDSCAPE_TEMPLATE_ID}}
-          HD_BANNER_BEAR_PORTRAIT_TEMPLATE_ID: ${{secrets.BANNER_BEAR_PORTRAIT_TEMPLATE_ID}}
-          HD_TWILIO_ACCOUNT_SID: ${{secrets.TWILIO_ACCOUNT_SID}}
-          HD_TWILIO_AUTH_TOKEN: ${{secrets.TWILIO_AUTH_TOKEN}}
-          HD_TWILIO_API_KEY: ${{secrets.TWILIO_API_KEY}}
-          HD_TWILIO_API_KEY_SECRET: ${{secrets.TWILIO_API_KEY_SECRET}}
+          email: ${{secrets.HEROKU_EMAIL}}
+          api_key: ${{secrets.HEROKU_API_KEY}}
+          docker_compose_file: 'docker-compose.yml'
+          heroku_app: [{"imagename": "app1"}, {"appname": ${{secrets.HEROKU_APP_NAME}}, "apptype": "web"}]

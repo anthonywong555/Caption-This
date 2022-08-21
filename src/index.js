@@ -53,11 +53,11 @@ app.post('/caption', async (req, res) => {
     }
 });
 
-const driver = async (twilioRequest) => {
+const driver = async ({To, From, Body, MediaMessageSID}) => {
     try {
+        return await getMediaURLs(MediaMessageSID);
         const {To, From, Body} = twilioRequest;
         const ImageURLs = JSON.parse(twilioRequest.ImageURLs);
-        console.log(`Body: ${Body}`);
         console.log(`ImageURLs: ${ImageURLs}`);
 
         const bbPromises = ImageURLs.map(async(anImageURL) => {
@@ -111,6 +111,16 @@ const driver = async (twilioRequest) => {
     }
 }
 
+const getMediaURLs = async (twilioMessageSID) => {
+    try {
+        const message = await twilioClient.messages(twilioMessageSID).fetch();
+        console.log(`message`, message);
+        return [];
+    } catch (e) {
+        console.error(`An error has occurred in the getMediaURLs method. \n${e}`);
+        throw e;
+    }
+}
 
 const getAppropriateTemplateId = ({width, height}) => {
     let bbTemplateId;

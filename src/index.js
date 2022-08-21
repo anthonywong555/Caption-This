@@ -42,7 +42,7 @@ app.post('/caption', async (req, res) => {
                 process.env.TWILIO_AUTH_TOKEN,
                 twilioSignature,
                 url,
-                params
+                body
             );
             console.log(`requestIsValid: ${requestIsValid}`);
 

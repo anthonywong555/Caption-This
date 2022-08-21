@@ -1,7 +1,5 @@
 FROM node
 
-RUN adduser -D 
-
 WORKDIR /usr/src/app
 
 COPY package*.json .

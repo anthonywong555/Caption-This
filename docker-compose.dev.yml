@@ -2,15 +2,9 @@ version: '3'
 services:
   web:
     container_name: caption-this
-    restart: always
     build:
       context: .
       dockerfile: Dockerfile.dev
-    volumes:
-      - ./:/usr/src/app
-      - exclude:/usr/src/app/node_modules
     env_file: .env
     ports:
       - "$PORT:$PORT"
-volumes:
-  exclude:

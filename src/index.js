@@ -53,53 +53,39 @@ app.post('/caption', async (req, res) => {
     }
 });
 
-const driver = async ({To, From, Body, MediaMessageSID}) => {
+const driver = async ({To, From, Body, ImageURL}) => {
     try {
-        return await getMediaURLs(MediaMessageSID);
-        const {To, From, Body} = twilioRequest;
-        const ImageURLs = JSON.parse(twilioRequest.ImageURLs);
-        console.log(`ImageURLs: ${ImageURLs}`);
+        const probeImageResult = await probe(ImageURL);
+        const bbTemplateId = getAppropriateTemplateId(probeImageResult);
+        const bbImage = await bbClient.create_image(
+            bbTemplateId, {
+                modifications: [
+                    {
+                        name: "image",
+                        image_url: ImageURL
+                    },
+                    {
+                        "name": "title",
+                        "text": Body
+                    }
+                ]
+            }, true
+        );
+        
+        const {image_url_png, uid} = bbImage;
+        console.log(`uid: ${uid}`);
 
-        const bbPromises = ImageURLs.map(async(anImageURL) => {
-            const probeImageResult = await probe(anImageURL);
-            const bbTemplateId = getAppropriateTemplateId(probeImageResult);
-            const bbImage = await bbClient.create_image(
-                bbTemplateId, {
-                    modifications: [
-                        {
-                            name: "image",
-                            image_url: anImageURL
-                        },
-                        {
-                            "name": "title",
-                            "text": Body
-                        }
-                    ]
-                }, true
-            );
-            return bbImage;
+        const twilioSMSResponse = await twilioClient.messages.create({
+            to: From,
+            from: To,
+            mediaUrl: image_url_png,
         });
+        
+        const {sid} = twilioSMSResponse;
 
-        const bbResults = await Promise.all(bbPromises);
-        const bbPNGImageUrls = bbResults.map((bbResult) => bbResult.image_url_png);
-        const bbImageUIDs = bbResults.map((bbImage) => bbImage.uid);
+        console.log(`sid: ${sid}`);
 
-        console.log(`bbImageUIDs: ${bbImageUIDs}`);
-
-        const twilioSMSPromises = bbPNGImageUrls.map(async(mediaUrl) => {
-            const sms = await twilioClient.messages.create({
-                mediaUrl,
-                to: From,
-                from: To,
-            });
-            return sms;
-        });
-
-        const twilioSMSResponses  = await Promise.all(twilioSMSPromises);
-        const twilioSMSSIDs = twilioSMSResponses.map((aSMSResponse) => aSMSResponse.sid);
-        console.log(`twilioSMSSIDs: ${twilioSMSSIDs}`);
-
-        return twilioSMSSIDs;
+        return {bbId: uid, twilioId: sid};
     } catch(e) {
         console.error(`An error has occurred in the driver method. \n${e}`);
         await twilioClient.messages.create({
@@ -107,17 +93,6 @@ const driver = async ({To, From, Body, MediaMessageSID}) => {
             from: To,
             body: 'Sorry, it looks like an error has occurred. Please try again later.'
         });
-        throw e;
-    }
-}
-
-const getMediaURLs = async (twilioMessageSID) => {
-    try {
-        const message = await twilioClient.messages(twilioMessageSID).fetch();
-        console.log(`message`, message);
-        return [];
-    } catch (e) {
-        console.error(`An error has occurred in the getMediaURLs method. \n${e}`);
         throw e;
     }
 }

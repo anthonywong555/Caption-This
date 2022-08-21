@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/src/app
     env_file: .env
     ports:
       - "80:$PORT"
